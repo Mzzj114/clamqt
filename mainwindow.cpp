@@ -3,8 +3,10 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDesktopServices>
+#include <QMessageBox>
 #include <QDebug>
 #include <QPushButton>
+#include <QScrollBar>
 #include <QSound>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -23,16 +25,21 @@ MainWindow::MainWindow(QWidget *parent)
 
     //connections
     connect(p, &OtherExec::readyRead, this, &MainWindow::readLine);
-    connect(p, &OtherExec::readyReadError, this, &MainWindow::readLine);
+    connect(p, &OtherExec::readyReadError, this, [=](QString str){
+        QMessageBox::warning(this,"Warning",str);
+    });
+
     connect(p, &OtherExec::exit, this, &MainWindow::resultReview);
     connect(ui->apply_settings_btn, &QPushButton::clicked, this, &MainWindow::applySettings);
     connect(ui->f_scan_btn, &QPushButton::clicked, this, &MainWindow::fileScan);
     connect(ui->m_scan_btn, &QPushButton::clicked, this, &MainWindow::memoryScan);
     connect(ui->update_database_btn, &QPushButton::clicked, this, &MainWindow::updateDatabase);
+    connect(ui->f_status_listWidget->verticalScrollBar(), &QScrollBar::valueChanged, ui->files_to_scan_listWidget->verticalScrollBar(), &QScrollBar::setValue);
+    connect(ui->m_status_listWidget->verticalScrollBar(), &QScrollBar::valueChanged, ui->m_to_scan_listWidget->verticalScrollBar(), &QScrollBar::setValue);
 
-
-    ui->sum_browser->hide();
+    //ui
     ui->f_encounterVirusComboBox->setCurrentIndex(3);
+    //ui->tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     //showPic("check");
     playSound("scan");
 
@@ -68,6 +75,7 @@ void MainWindow::openConfigFile(const QString path)
 
 void MainWindow::applySettings()
 {
+    state = states::CheckingConf;
     ui->apply_settings_btn->setEnabled(false);
     ui->f_scan_btn->setEnabled(false);
     ui->m_scan_btn->setEnabled(false);
@@ -131,40 +139,34 @@ void MainWindow::readLine(QString str)
 {
     setOutputTagNum(++line);
     qDebug() << str;
-    //checking
-    if (str.count("Checking configuration files in ")>=1)
-    {
-        //showPic("check");
-        qDebug() << "check";
-        return;
+    switch (state) {
+    case states::ScaningFile:
+        readFileScan(str);
+        break;
+    case states::ScaningMemory:
+        readMemoryScan(str);
+        break;
+    case states::Updating:
+        readUpdate(str);
+        break;
+    case states::CheckingConf:
+        readCheckingConf(str);
+        break;
+    default:
+        ui->detail_browser->setText(ui->detail_browser->toPlainText()+'\n'+str);
+        break;
     }
 
-    //scaning
-    int index = str.indexOf("----------- SCAN SUMMARY -----------");
-    if (index != -1) {
-        playSound("scan");
-        qDebug() << "scan";
-
-        QString afterSummary = str.mid(index);
-        QString beforeSummary = str.left(index);
 
 
-        qDebug() << afterSummary;
-        ui->sum_browser->setText(ui->sum_browser->toPlainText()+afterSummary);
-        ui->sum_browser->show();
-        ui->detail_browser->setText(ui->detail_browser->toPlainText()+beforeSummary);
-        return;
-    }
-    else
-    {}
 
 
-    //default
-    ui->detail_browser->setText(ui->detail_browser->toPlainText()+'\n'+str);
+
 }
 
 void MainWindow::resultReview()
 {
+    state = states::Available;
     ui->statusbar->showMessage("finish",5000);
 
 
@@ -181,12 +183,12 @@ void MainWindow::start(const QString appname, const QStringList args)
     settings->endGroup();
 
     ui->detail_browser->clear();
-    ui->sum_browser->clear();
-    ui->sum_browser->hide();
 }
 
 void MainWindow::fileScan()
 {
+    state = states::ScaningFile;
+
     ui->apply_settings_btn->setEnabled(false);
     ui->f_scan_btn->setEnabled(false);
     ui->m_scan_btn->setEnabled(false);
@@ -208,6 +210,8 @@ void MainWindow::fileScan()
 
 void MainWindow::memoryScan()
 {
+    state = states::ScaningMemory;
+
     ui->apply_settings_btn->setEnabled(false);
     ui->f_scan_btn->setEnabled(false);
     ui->m_scan_btn->setEnabled(false);
@@ -225,8 +229,135 @@ void MainWindow::memoryScan()
 
 void MainWindow::updateDatabase()
 {
+    state = states::Updating;
+
     start("freshclam");
     ui->toolBox->setCurrentIndex(3);
+}
+
+void MainWindow::readFileScan(const QString &str)
+{
+    //文件扫描时的读取，这里的问题是结果可能是分段发的，就算有SCAN SUMMARY也可能不在这一段
+    int index = str.indexOf("----------- SCAN SUMMARY -----------");
+    if (index != -1) {
+        playSound("scan");
+        qDebug() << "scan";
+
+        QString afterSummary = str.mid(index);
+        QString beforeSummary = str.left(index);
+
+
+        ui->detail_browser->setText(ui->detail_browser->toPlainText()+beforeSummary);
+
+        QMessageBox::information(this,tr("Scan conclude"),afterSummary);
+
+        readFileScan(beforeSummary);
+
+    }
+    else
+    {
+        //人工智能写的，读取输出并更改两个listwidget
+        foreach (const QString &each_result, str.split('\n'))
+        {
+            qDebug() << "spliting \\n, we got: " << each_result;
+            QStringList file_and_status = each_result.split(": ", Qt::SkipEmptyParts);
+
+            if (file_and_status.size() >= 2) // 确保我们有足够的部分
+            {
+                qDebug() << "spliting : , we got: " << file_and_status;
+
+                // 查找文件项，注意findItems可能返回空列表
+                QList<QListWidgetItem*> items = ui->files_to_scan_listWidget->findItems(file_and_status.at(0), Qt::MatchContains);
+                if (!items.isEmpty()) // 确保找到了至少一个项
+                {
+                    QListWidgetItem *item = items.at(0); // 假设我们只关心第一个匹配项
+                    int index = ui->files_to_scan_listWidget->row(item);
+
+                    // 确保f_status_listWidget的行数和files_to_scan_listWidget一样多
+                    // 或者确保我们不会超出f_status_listWidget的范围
+                    if (index >= 0 && index < ui->f_status_listWidget->count())
+                    {
+                        QListWidgetItem *statusItem = ui->f_status_listWidget->item(index); // 使用item而不是itemAt
+                        if (statusItem) // 确保statusItem不是nullptr
+                        {
+                            statusItem->setText(file_and_status.at(1));
+                        }
+                    }
+                    else
+                    {
+                        qDebug() << "Index out of range for f_status_listWidget";
+                    }
+                }
+                else
+                {
+                    qDebug() << "No matching item found in files_to_scan_listWidget";
+                }
+            }
+            else
+            {
+                qDebug() << "Not enough parts in the split string";
+            }
+        }
+
+    }
+}
+
+void MainWindow::readMemoryScan(const QString &str)
+{
+    int index = str.indexOf("----------- SCAN SUMMARY -----------");
+    if (index != -1) {
+        playSound("scan");
+        qDebug() << "mscan";
+
+        QString afterSummary = str.mid(index);
+        QString beforeSummary = str.left(index);
+
+
+        ui->detail_browser->setText(ui->detail_browser->toPlainText()+beforeSummary);
+
+        QMessageBox::information(this,tr("Memory Scan conclude"),afterSummary);
+
+        readFileScan(beforeSummary);
+
+    }
+    else
+    {
+        //人工智能写的，读取输出并更改两个listwidget
+        foreach (const QString &each_result, str.split('\n'))
+        {
+            qDebug() << "spliting \\n, we got: " << each_result;
+            QStringList file_and_status = each_result.split(": ", Qt::SkipEmptyParts);
+
+            if (file_and_status.size() >= 2) // 确保我们有足够的部分
+            {
+                qDebug() << "spliting : , we got: " << file_and_status;
+
+                ui->m_to_scan_listWidget->addItem(file_and_status.at(0));
+                ui->m_status_listWidget->addItem(file_and_status.at(1));
+            }
+            else
+            {
+                qDebug() << "Not enough parts in the split string";
+            }
+        }
+
+    }
+}
+
+void MainWindow::readUpdate(const QString &str)
+{
+    ui->detail_browser->setText(ui->detail_browser->toPlainText()+'\n'+str);
+}
+
+void MainWindow::readCheckingConf(const QString &str)
+{
+    //checking
+    if (str.count("Checking configuration files in ")>=1)
+    {
+        //showPic("check");
+        qDebug() << "check";
+        return;
+    }
 }
 
 
@@ -235,6 +366,7 @@ void MainWindow::on_bowse_f_targ_clicked()
     QStringList files = QFileDialog::getOpenFileNames(this,tr("Choose files to scan"));
     foreach (auto file, files) {
         ui->files_to_scan_listWidget->addItem(QDir::toNativeSeparators(file));
+        ui->f_status_listWidget->addItem(tr("Unknown"));
     }
 
 }

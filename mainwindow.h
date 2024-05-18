@@ -23,6 +23,14 @@ public:
     OtherExec *p;
     QSettings *settings;
 
+    enum states{
+        ScaningFile,
+        ScaningMemory,
+        Updating,
+        CheckingConf,
+        Available,
+    }state = states::Available;
+
     void openConfigFile(const QString path);
     void applySettings();
 
@@ -34,6 +42,7 @@ public:
     //set the tag after the toolbox tag
     void setOutputTagNum(int num);
 
+    //for tab output
     int line = 0;
 
     //slot when readyread
@@ -46,6 +55,10 @@ public:
     void fileScan();
     void memoryScan();
     void updateDatabase();
+    void readFileScan(const QString& str);
+    void readMemoryScan(const QString& str);
+    void readUpdate(const QString& str);
+    void readCheckingConf(const QString& str);
 
 private slots:
     void on_bowse_f_targ_clicked();

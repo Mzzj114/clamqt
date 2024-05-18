@@ -33,7 +33,7 @@
     <item>
      <widget class="QToolBox" name="toolBox">
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="fscan_page">
        <property name="geometry">
@@ -47,57 +47,7 @@
        <attribute name="label">
         <string>File Scan</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_4" stretch="1,0,0">
-        <item>
-         <widget class="QGroupBox" name="f_targ_groupB">
-          <property name="title">
-           <string>Target</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3" stretch="0,0">
-           <item>
-            <widget class="QListWidget" name="files_to_scan_listWidget">
-             <property name="editTriggers">
-              <set>QAbstractItemView::AllEditTriggers</set>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <property name="spacing">
-              <number>0</number>
-             </property>
-             <item>
-              <spacer name="horizontalSpacer_5">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QPushButton" name="bowse_f_targ">
-               <property name="text">
-                <string>Browse to add</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QPushButton" name="f_clear_btn">
-               <property name="text">
-                <string>Clear</string>
-               </property>
-              </widget>
-             </item>
-            </layout>
-           </item>
-          </layout>
-         </widget>
-        </item>
+       <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
          <widget class="QGroupBox" name="f_opti_groupB">
           <property name="title">
@@ -177,13 +127,92 @@
            </item>
            <item row="1" column="0">
             <widget class="QCheckBox" name="f_R_checkB">
+             <property name="whatsThis">
+              <string>Incompatible with clamdeamon</string>
+             </property>
              <property name="text">
               <string>Recursive</string>
              </property>
              <property name="checked">
-              <bool>true</bool>
+              <bool>false</bool>
              </property>
             </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="f_targ_groupB">
+          <property name="title">
+           <string>Target</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_3">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="2,1">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QListWidget" name="files_to_scan_listWidget">
+               <property name="verticalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAsNeeded</enum>
+               </property>
+               <property name="editTriggers">
+                <set>QAbstractItemView::AllEditTriggers</set>
+               </property>
+               <property name="textElideMode">
+                <enum>Qt::ElideLeft</enum>
+               </property>
+               <property name="horizontalScrollMode">
+                <enum>QAbstractItemView::ScrollPerPixel</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListWidget" name="f_status_listWidget">
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <item>
+              <spacer name="horizontalSpacer_5">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QPushButton" name="bowse_f_targ">
+               <property name="text">
+                <string>Browse to add file(s)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QPushButton" name="f_clear_btn">
+               <property name="text">
+                <string>Clear</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -226,31 +255,7 @@
        <attribute name="label">
         <string>Memory Scan</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_6" stretch="0,1,0">
-        <item>
-         <widget class="QGroupBox" name="groupBox_3">
-          <property name="title">
-           <string>Target</string>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout_5">
-           <item>
-            <widget class="QComboBox" name="comboBox">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="toolTip">
-              <string>virtual memory of currently executing processes</string>
-             </property>
-             <item>
-              <property name="text">
-               <string>Virtual memory</string>
-              </property>
-             </item>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </item>
+       <layout class="QVBoxLayout" name="verticalLayout_6">
         <item>
          <widget class="QGroupBox" name="groupBox_4">
           <property name="title">
@@ -298,6 +303,48 @@
               <bool>false</bool>
              </property>
             </widget>
+           </item>
+          </layout>
+         </widget>
+        </item>
+        <item>
+         <widget class="QGroupBox" name="groupBox_3">
+          <property name="title">
+           <string>Target</string>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_5">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="2,1">
+             <property name="spacing">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QListWidget" name="m_to_scan_listWidget">
+               <property name="verticalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAsNeeded</enum>
+               </property>
+               <property name="editTriggers">
+                <set>QAbstractItemView::AllEditTriggers</set>
+               </property>
+               <property name="textElideMode">
+                <enum>Qt::ElideLeft</enum>
+               </property>
+               <property name="horizontalScrollMode">
+                <enum>QAbstractItemView::ScrollPerPixel</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QListWidget" name="m_status_listWidget">
+               <property name="horizontalScrollBarPolicy">
+                <enum>Qt::ScrollBarAlwaysOff</enum>
+               </property>
+              </widget>
+             </item>
+            </layout>
            </item>
           </layout>
          </widget>
@@ -659,12 +706,60 @@
    <slot>clear()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>314</x>
-     <y>265</y>
+     <x>369</x>
+     <y>454</y>
     </hint>
     <hint type="destinationlabel">
-     <x>188</x>
-     <y>167</y>
+     <x>151</x>
+     <y>339</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>f_clear_btn</sender>
+   <signal>clicked()</signal>
+   <receiver>f_status_listWidget</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>369</x>
+     <y>454</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>345</x>
+     <y>339</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_scan_btn</sender>
+   <signal>clicked()</signal>
+   <receiver>m_to_scan_listWidget</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>370</x>
+     <y>526</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>217</x>
+     <y>386</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>m_scan_btn</sender>
+   <signal>clicked()</signal>
+   <receiver>m_status_listWidget</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>396</x>
+     <y>528</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>405</x>
+     <y>419</y>
     </hint>
    </hints>
   </connection>
