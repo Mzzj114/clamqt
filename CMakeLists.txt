@@ -21,6 +21,10 @@ set(PROJECT_SOURCES
         otherexec.cpp
         otherexec.h
         mainwindow.ui
+        outputdialog.h
+        outputdialog.cpp
+        outputdialog.ui
+        platform.cpp
         ${TS_FILES}
 )
 
@@ -45,6 +49,7 @@ else()
     else()
         add_executable(clamqt
             ${PROJECT_SOURCES}
+
         )
     endif()
 

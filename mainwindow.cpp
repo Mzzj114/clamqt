@@ -15,12 +15,14 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     p = new OtherExec(this);
+    outputdialog = new OutputDialog(this);
 
     //settings
     settings = new QSettings(QDir::current().filePath("settings.ini"),QSettings::IniFormat,this);
     settings->beginGroup("Path");
     ui->clamAVLineEdit->setText(settings->value("ClamAVDir").toString());
     settings->endGroup();
+
     on_clamAVLineEdit_editingFinished();
 
     //connections
@@ -39,16 +41,24 @@ MainWindow::MainWindow(QWidget *parent)
 
     //ui
     ui->f_encounterVirusComboBox->setCurrentIndex(3);
+    outputdialog->hide();
     //ui->tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     //showPic("check");
     playSound("scan");
+
+    platformInit();
 
 }
 
 MainWindow::~MainWindow()
 {
+#ifdef Q_OS_WIN
+    if (ui->s_autostart_checkB->isChecked())
+        system("net stop clamd");
+#endif
     delete ui;
 }
+
 
 void MainWindow::openConfigFile(const QString path)
 {
@@ -83,12 +93,16 @@ void MainWindow::applySettings()
 
     settings->beginGroup("Path");
     settings->setValue("ClamAVDir",QDir(ui->clamAVLineEdit->text()).absolutePath());
-
     settings->endGroup();
 
-    start("clamconf.exe");
+    settings->beginGroup("ClamD");
+    settings->setValue("AutoStartService",ui->s_autostart_checkB->isChecked());
+    settings->endGroup();
+
+    start("clamconf");
 
 }
+
 
 /*
 void MainWindow::showPic(QString picture)
@@ -127,18 +141,9 @@ void MainWindow::playSound(QString sound)
     QSound::play(fullPath);
 }
 
-void MainWindow::setOutputTagNum(int num)
-{
-    if (num==0)
-        ui->toolBox->setItemText(3,tr("Output"));
-    else
-        ui->toolBox->setItemText(3,tr("Output(")+QString::fromStdString(std::to_string(num))+')');
-}
 
 void MainWindow::readLine(QString str)
 {
-    setOutputTagNum(++line);
-    qDebug() << str;
     switch (state) {
     case states::ScaningFile:
         readFileScan(str);
@@ -153,7 +158,7 @@ void MainWindow::readLine(QString str)
         readCheckingConf(str);
         break;
     default:
-        ui->detail_browser->setText(ui->detail_browser->toPlainText()+'\n'+str);
+        outputdialog->textAdd(str);
         break;
     }
 
@@ -182,7 +187,7 @@ void MainWindow::start(const QString appname, const QStringList args)
     p->start(QDir(settings->value("ClamAVDir").toString()).filePath(appname),args);
     settings->endGroup();
 
-    ui->detail_browser->clear();
+    outputdialog->clear();
 }
 
 void MainWindow::fileScan()
@@ -247,7 +252,7 @@ void MainWindow::readFileScan(const QString &str)
         QString beforeSummary = str.left(index);
 
 
-        ui->detail_browser->setText(ui->detail_browser->toPlainText()+beforeSummary);
+        //ui->detail_browser->setText(ui->detail_browser->toPlainText()+beforeSummary);
 
         QMessageBox::information(this,tr("Scan conclude"),afterSummary);
 
@@ -313,7 +318,7 @@ void MainWindow::readMemoryScan(const QString &str)
         QString beforeSummary = str.left(index);
 
 
-        ui->detail_browser->setText(ui->detail_browser->toPlainText()+beforeSummary);
+        //ui->detail_browser->setText(ui->detail_browser->toPlainText()+beforeSummary);
 
         QMessageBox::information(this,tr("Memory Scan conclude"),afterSummary);
 
@@ -346,7 +351,7 @@ void MainWindow::readMemoryScan(const QString &str)
 
 void MainWindow::readUpdate(const QString &str)
 {
-    ui->detail_browser->setText(ui->detail_browser->toPlainText()+'\n'+str);
+    outputdialog->textAdd(str);
 }
 
 void MainWindow::readCheckingConf(const QString &str)
@@ -413,16 +418,12 @@ void MainWindow::on_clamAVLineEdit_editingFinished()
     ui->frsh_confpath_lineEdit->setText(path2);
 }
 
-
+/*
 void MainWindow::on_toolBox_currentChanged(int index)
 {
-    if (index == 3)
-    {
-        line = 0;
-        setOutputTagNum(line);
-    }
-}
 
+}
+*/
 
 void MainWindow::on_cancel_settings_btn_clicked()
 {
