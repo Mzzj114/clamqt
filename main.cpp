@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 
 
     MainWindow w;
-    //w.setWindowFlag(Qt::FramelessWindowHint);
+    w.setWindowFlag(Qt::FramelessWindowHint);
     w.show();
     return a.exec();
 }

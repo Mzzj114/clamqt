@@ -25,6 +25,10 @@ set(PROJECT_SOURCES
         outputdialog.cpp
         outputdialog.ui
         platform.cpp
+        header.h
+        header.cpp
+
+        resource.qrc
         ${TS_FILES}
 )
 

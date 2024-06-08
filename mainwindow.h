@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QSettings>
 #include <QDir>
+#include <QSystemTrayIcon>
 #include "otherexec.h"
 #include "outputdialog.h"
 
@@ -61,6 +62,8 @@ public:
 
 
 private slots:
+    void OnSystemTrayClicked(QSystemTrayIcon::ActivationReason reason);
+
     void on_bowse_f_targ_clicked();
     void on_f_encounterVirusComboBox_currentIndexChanged(int index);
     void on_edit_clamd_config_btn_clicked();
@@ -69,9 +72,13 @@ private slots:
     //void on_toolBox_currentChanged(int index);
     void on_cancel_settings_btn_clicked();
     void on_stop_button_clicked();
+    void on_bowse_d_targ_clicked();
+    void on_close_btn_clicked();
 
 private:
     Ui::MainWindow *ui;
     OutputDialog *outputdialog;
+
+    QSystemTrayIcon *trayIcon;
 };
 #endif // MAINWINDOW_H

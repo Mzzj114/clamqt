@@ -2,13 +2,15 @@
 #include "./ui_mainwindow.h"
 #include <QDebug>
 
+//as for default, all the platform-specialized widgets are shown
+
 #ifdef Q_OS_WIN
 #include <windows.h>
 #include <winsvc.h>
 
 void MainWindow::platformInit()
 {
-    ui->onacc_page->hide();
+    //ui->onacc_page->hide();
 
     connect(ui->s_startservice_btn, &QAbstractButton::clicked, this, &MainWindow::startService);
 

@@ -1,4 +1,5 @@
 #include "outputdialog.h"
+#include "QScrollBar"
 #include "ui_outputdialog.h"
 
 #include <QAbstractButton>
@@ -23,6 +24,11 @@ void OutputDialog::textAdd(const QString &str)
     if (str.isEmpty())
         return;
     ui->plainTextEdit->setPlainText(ui->plainTextEdit->toPlainText()+str);
+
+    //滚动到底部
+    QScrollBar *scrollbar = ui->plainTextEdit->verticalScrollBar();
+    scrollbar->setValue(scrollbar->maximum());
+
     this->show();
 }
 

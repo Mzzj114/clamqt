@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     p = new OtherExec(this);
     outputdialog = new OutputDialog(this);
+    trayIcon = new QSystemTrayIcon(this);
 
     //settings
     settings = new QSettings(QDir::current().filePath("settings.ini"),QSettings::IniFormat,this);
@@ -25,13 +26,30 @@ MainWindow::MainWindow(QWidget *parent)
 
     on_clamAVLineEdit_editingFinished();
 
+    //sys tray icon
+    trayIcon->setIcon(QIcon(":/resource/img/scan.png"));
+    trayIcon->setToolTip("clamqt");
+
+    QMenu *trayMenu = new QMenu(this);
+    trayMenu->addAction(tr("Open Clamqt"), this, [=]{
+        this->show();
+    });
+    trayMenu->addAction(tr("exit"), this, [=]{
+        this->close();
+    });
+    trayIcon->setContextMenu(trayMenu);
+
+    trayIcon->show();
+
     //connections
     connect(p, &OtherExec::readyRead, this, &MainWindow::readLine);
     connect(p, &OtherExec::readyReadError, this, [=](QString str){
         QMessageBox::warning(this,"Warning",str);
     });
-
     connect(p, &OtherExec::exit, this, &MainWindow::resultReview);
+
+    connect(trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::OnSystemTrayClicked);
+
     connect(ui->apply_settings_btn, &QPushButton::clicked, this, &MainWindow::applySettings);
     connect(ui->f_scan_btn, &QPushButton::clicked, this, &MainWindow::fileScan);
     connect(ui->m_scan_btn, &QPushButton::clicked, this, &MainWindow::memoryScan);
@@ -42,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent)
     //ui
     ui->f_encounterVirusComboBox->setCurrentIndex(3);
     outputdialog->hide();
+    ui->headerWidget->setWidgetToMove(this);
     //ui->tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     //showPic("check");
     playSound("scan");
@@ -59,6 +78,13 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::OnSystemTrayClicked(QSystemTrayIcon::ActivationReason reason)
+{
+    if (reason == QSystemTrayIcon::ActivationReason::Trigger)
+    {
+        this->show();
+    }
+}
 
 void MainWindow::openConfigFile(const QString path)
 {
@@ -418,13 +444,6 @@ void MainWindow::on_clamAVLineEdit_editingFinished()
     ui->frsh_confpath_lineEdit->setText(path2);
 }
 
-/*
-void MainWindow::on_toolBox_currentChanged(int index)
-{
-
-}
-*/
-
 void MainWindow::on_cancel_settings_btn_clicked()
 {
     ui->toolBox->setCurrentIndex(0);
@@ -439,5 +458,20 @@ void MainWindow::on_stop_button_clicked()
     ui->f_scan_btn->setEnabled(true);
     ui->m_scan_btn->setEnabled(true);
     ui->update_database_btn->setEnabled(true);
+}
+
+
+void MainWindow::on_bowse_d_targ_clicked()
+{
+    QString dic = QFileDialog::getExistingDirectory(this,tr("Choose files to scan"));
+
+    ui->files_to_scan_listWidget->addItem(QDir::toNativeSeparators(dic));
+    ui->f_status_listWidget->addItem(tr("Unknown"));
+}
+
+
+void MainWindow::on_close_btn_clicked()
+{
+    this->hide();
 }
 
