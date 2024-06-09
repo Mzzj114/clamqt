@@ -60,6 +60,7 @@ public:
     void readUpdate(const QString& str);
     void readCheckingConf(const QString& str);
 
+    bool eventFilter(QObject *obj, QEvent *event);
 
 private slots:
     void OnSystemTrayClicked(QSystemTrayIcon::ActivationReason reason);
@@ -71,7 +72,7 @@ private slots:
     void on_clamAVLineEdit_editingFinished();
     //void on_toolBox_currentChanged(int index);
     void on_cancel_settings_btn_clicked();
-    void on_stop_button_clicked();
+    //void on_stop_button_clicked();
     void on_bowse_d_targ_clicked();
     void on_close_btn_clicked();
 

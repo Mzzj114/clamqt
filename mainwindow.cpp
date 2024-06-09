@@ -8,6 +8,8 @@
 #include <QPushButton>
 #include <QScrollBar>
 #include <QSound>
+#include <QDropEvent>
+#include <QMimeData>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -20,14 +22,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     //settings
     settings = new QSettings(QDir::current().filePath("settings.ini"),QSettings::IniFormat,this);
-    settings->beginGroup("Path");
+    settings->beginGroup("ClamQT");
     ui->clamAVLineEdit->setText(settings->value("ClamAVDir").toString());
     settings->endGroup();
 
     on_clamAVLineEdit_editingFinished();
 
     //sys tray icon
-    trayIcon->setIcon(QIcon(":/resource/img/scan.png"));
+    trayIcon->setIcon(QIcon(":/resource/img/clamqt.png"));
     trayIcon->setToolTip("clamqt");
 
     QMenu *trayMenu = new QMenu(this);
@@ -61,6 +63,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->f_encounterVirusComboBox->setCurrentIndex(3);
     outputdialog->hide();
     ui->headerWidget->setWidgetToMove(this);
+    ui->files_to_scan_listWidget->installEventFilter(this);
     //ui->tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     //showPic("check");
     playSound("scan");
@@ -85,6 +88,31 @@ void MainWindow::OnSystemTrayClicked(QSystemTrayIcon::ActivationReason reason)
         this->show();
     }
 }
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == ui->files_to_scan_listWidget && event->type()==QEvent::Type::Drop)
+    {
+        QDropEvent *dropEvent = static_cast<QDropEvent*>(event);
+        if(dropEvent->mimeData()->hasUrls())
+        {
+            foreach (auto url, dropEvent->mimeData()->urls())
+            {
+                ui->files_to_scan_listWidget->addItem(QDir::toNativeSeparators(url.fileName()));
+                ui->f_status_listWidget->addItem(tr("Unknown"));
+            }
+            return true;
+        }
+        else
+        {
+            QMessageBox::question(this, "Warning", tr("You can't drop this"));
+        }
+    }
+
+
+    return false;
+}
+
 
 void MainWindow::openConfigFile(const QString path)
 {
@@ -117,7 +145,7 @@ void MainWindow::applySettings()
     ui->m_scan_btn->setEnabled(false);
     ui->update_database_btn->setEnabled(false);
 
-    settings->beginGroup("Path");
+    settings->beginGroup("ClamQT");
     settings->setValue("ClamAVDir",QDir(ui->clamAVLineEdit->text()).absolutePath());
     settings->endGroup();
 
@@ -209,7 +237,7 @@ void MainWindow::resultReview()
 
 void MainWindow::start(const QString appname, const QStringList args)
 {
-    settings->beginGroup("Path");
+    settings->beginGroup("ClamQT");
     p->start(QDir(settings->value("ClamAVDir").toString()).filePath(appname),args);
     settings->endGroup();
 
@@ -391,7 +419,6 @@ void MainWindow::readCheckingConf(const QString &str)
     }
 }
 
-
 void MainWindow::on_bowse_f_targ_clicked()
 {
     QStringList files = QFileDialog::getOpenFileNames(this,tr("Choose files to scan"));
@@ -449,7 +476,7 @@ void MainWindow::on_cancel_settings_btn_clicked()
     ui->toolBox->setCurrentIndex(0);
 }
 
-
+/*
 void MainWindow::on_stop_button_clicked()
 {
     p->stop();
@@ -459,7 +486,7 @@ void MainWindow::on_stop_button_clicked()
     ui->m_scan_btn->setEnabled(true);
     ui->update_database_btn->setEnabled(true);
 }
-
+*/
 
 void MainWindow::on_bowse_d_targ_clicked()
 {

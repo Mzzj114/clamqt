@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>resource/img/close.png</file>
         <file>resource/img/scan.png</file>
+        <file>resource/img/clamqt.png</file>
     </qresource>
 </RCC>

@@ -13,11 +13,40 @@
   <property name="windowTitle">
    <string>Clamqt</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resource.qrc">
+    <normaloff>:/resource/img/clamqt.png</normaloff>:/resource/img/clamqt.png</iconset>
+  </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_7">
     <item>
      <widget class="Header" name="headerWidget" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <item>
+        <widget class="QLabel" name="logo_label">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>30</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="pixmap">
+          <pixmap resource="resource.qrc">:/resource/img/clamqt.png</pixmap>
+         </property>
+         <property name="scaledContents">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
        <item>
         <widget class="QLabel" name="label_3">
          <property name="font">
@@ -72,7 +101,7 @@
          <x>0</x>
          <y>0</y>
          <width>414</width>
-         <height>434</height>
+         <height>427</height>
         </rect>
        </property>
        <attribute name="icon">
@@ -188,6 +217,9 @@
              </property>
              <item>
               <widget class="QListWidget" name="files_to_scan_listWidget">
+               <property name="acceptDrops">
+                <bool>true</bool>
+               </property>
                <property name="verticalScrollBarPolicy">
                 <enum>Qt::ScrollBarAlwaysOff</enum>
                </property>
@@ -290,7 +322,7 @@
          <x>0</x>
          <y>0</y>
          <width>414</width>
-         <height>434</height>
+         <height>427</height>
         </rect>
        </property>
        <attribute name="icon">
@@ -425,7 +457,7 @@
          <x>0</x>
          <y>0</y>
          <width>414</width>
-         <height>434</height>
+         <height>427</height>
         </rect>
        </property>
        <attribute name="icon">
@@ -441,7 +473,7 @@
          <x>0</x>
          <y>0</y>
          <width>414</width>
-         <height>434</height>
+         <height>427</height>
         </rect>
        </property>
        <attribute name="icon">
@@ -458,7 +490,7 @@
           </property>
           <widget class="QWidget" name="general_tab">
            <attribute name="title">
-            <string>General</string>
+            <string>ClamQT</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
@@ -482,6 +514,13 @@
                 </widget>
                </item>
               </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="groupBox_6">
+              <property name="title">
+               <string>System</string>
+              </property>
              </widget>
             </item>
            </layout>
