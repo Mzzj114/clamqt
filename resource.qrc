@@ -1,7 +1,13 @@
 <RCC>
     <qresource prefix="/">
         <file>resource/img/close.png</file>
-        <file>resource/img/scan.png</file>
+        <file>resource/img/scan_colored.png</file>
         <file>resource/img/clamqt.png</file>
+        <file>resource/img/back.png</file>
+        <file>resource/img/filescan.png</file>
+        <file>resource/img/memoryscan.png</file>
+        <file>resource/img/quit.png</file>
+        <file>resource/img/schedule.png</file>
+        <file>resource/img/settings.png</file>
     </qresource>
 </RCC>

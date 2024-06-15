@@ -7,7 +7,6 @@
 #include <QDebug>
 #include <QPushButton>
 #include <QScrollBar>
-#include <QSound>
 #include <QDropEvent>
 #include <QMimeData>
 
@@ -33,12 +32,14 @@ MainWindow::MainWindow(QWidget *parent)
     trayIcon->setToolTip("clamqt");
 
     QMenu *trayMenu = new QMenu(this);
-    trayMenu->addAction(tr("Open Clamqt"), this, [=]{
+    trayMenu->addAction(QIcon(":/resource/img/clamqt.png"), tr("Open Clamqt"), this, [=]{
         this->show();
     });
-    trayMenu->addAction(tr("exit"), this, [=]{
+    trayMenu->addAction(QIcon(":/resource/img/quit.png"), tr("exit"), this, [=]{
         this->close();
     });
+
+
     trayIcon->setContextMenu(trayMenu);
 
     trayIcon->show();
@@ -54,19 +55,23 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->apply_settings_btn, &QPushButton::clicked, this, &MainWindow::applySettings);
     connect(ui->f_scan_btn, &QPushButton::clicked, this, &MainWindow::fileScan);
-    connect(ui->m_scan_btn, &QPushButton::clicked, this, &MainWindow::memoryScan);
     connect(ui->update_database_btn, &QPushButton::clicked, this, &MainWindow::updateDatabase);
     connect(ui->f_status_listWidget->verticalScrollBar(), &QScrollBar::valueChanged, ui->files_to_scan_listWidget->verticalScrollBar(), &QScrollBar::setValue);
     connect(ui->m_status_listWidget->verticalScrollBar(), &QScrollBar::valueChanged, ui->m_to_scan_listWidget->verticalScrollBar(), &QScrollBar::setValue);
 
+    connect(ui->link_btn_fscan, &QPushButton::clicked, this, [=]{ui->stackedWidget->setCurrentIndex(1);});
+    connect(ui->link_btn_sche, &QPushButton::clicked, this, [=]{ui->stackedWidget->setCurrentIndex(3);});
+    connect(ui->link_btn_config, &QPushButton::clicked, this, [=]{ui->stackedWidget->setCurrentIndex(4);});
+
     //ui
     ui->f_encounterVirusComboBox->setCurrentIndex(3);
     outputdialog->hide();
+    ui->back_btn->hide();
     ui->headerWidget->setWidgetToMove(this);
     ui->files_to_scan_listWidget->installEventFilter(this);
     //ui->tableWidget->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     //showPic("check");
-    playSound("scan");
+    //playSound("scan");
 
     platformInit();
 
@@ -181,7 +186,7 @@ void MainWindow::showPic(QString picture)
     else {}
 }
 */
-
+/*
 void MainWindow::playSound(QString sound)
 {
     QDir sounddir = QDir::current();
@@ -194,7 +199,7 @@ void MainWindow::playSound(QString sound)
     QString fullPath = sounddir.filePath(fileName);
     QSound::play(fullPath);
 }
-
+*/
 
 void MainWindow::readLine(QString str)
 {
@@ -267,31 +272,13 @@ void MainWindow::fileScan()
     start(command,args);
 }
 
-void MainWindow::memoryScan()
-{
-    state = states::ScaningMemory;
-
-    ui->apply_settings_btn->setEnabled(false);
-    ui->f_scan_btn->setEnabled(false);
-    ui->m_scan_btn->setEnabled(false);
-    ui->update_database_btn->setEnabled(false);
-
-    QString command = "clamscan";
-    QStringList args = {"--memory"};
-    if (ui->m_daemon_checkB->isChecked()) command = "clamdscan";
-    if (ui->m_encounterVirusComboBox->currentIndex()==0) ;
-    else if (ui->m_encounterVirusComboBox->currentIndex()==1) args.append("--kill");
-    else if (ui->m_encounterVirusComboBox->currentIndex()==1) args.append("--unload");
-
-    start(command,args);
-}
 
 void MainWindow::updateDatabase()
 {
     state = states::Updating;
 
     start("freshclam");
-    ui->toolBox->setCurrentIndex(3);
+
 }
 
 void MainWindow::readFileScan(const QString &str)
@@ -299,7 +286,7 @@ void MainWindow::readFileScan(const QString &str)
     //文件扫描时的读取，这里的问题是结果可能是分段发的，就算有SCAN SUMMARY也可能不在这一段
     int index = str.indexOf("----------- SCAN SUMMARY -----------");
     if (index != -1) {
-        playSound("scan");
+        //playSound("scan");
         qDebug() << "scan";
 
         QString afterSummary = str.mid(index);
@@ -361,47 +348,6 @@ void MainWindow::readFileScan(const QString &str)
     }
 }
 
-void MainWindow::readMemoryScan(const QString &str)
-{
-    int index = str.indexOf("----------- SCAN SUMMARY -----------");
-    if (index != -1) {
-        playSound("scan");
-        qDebug() << "mscan";
-
-        QString afterSummary = str.mid(index);
-        QString beforeSummary = str.left(index);
-
-
-        //ui->detail_browser->setText(ui->detail_browser->toPlainText()+beforeSummary);
-
-        QMessageBox::information(this,tr("Memory Scan conclude"),afterSummary);
-
-        readFileScan(beforeSummary);
-
-    }
-    else
-    {
-        //人工智能写的，读取输出并更改两个listwidget
-        foreach (const QString &each_result, str.split('\n'))
-        {
-            qDebug() << "spliting \\n, we got: " << each_result;
-            QStringList file_and_status = each_result.split(": ", Qt::SkipEmptyParts);
-
-            if (file_and_status.size() >= 2) // 确保我们有足够的部分
-            {
-                qDebug() << "spliting : , we got: " << file_and_status;
-
-                ui->m_to_scan_listWidget->addItem(file_and_status.at(0));
-                ui->m_status_listWidget->addItem(file_and_status.at(1));
-            }
-            else
-            {
-                qDebug() << "Not enough parts in the split string";
-            }
-        }
-
-    }
-}
 
 void MainWindow::readUpdate(const QString &str)
 {
@@ -473,7 +419,7 @@ void MainWindow::on_clamAVLineEdit_editingFinished()
 
 void MainWindow::on_cancel_settings_btn_clicked()
 {
-    ui->toolBox->setCurrentIndex(0);
+    on_back_btn_clicked();
 }
 
 /*
@@ -500,5 +446,47 @@ void MainWindow::on_bowse_d_targ_clicked()
 void MainWindow::on_close_btn_clicked()
 {
     this->hide();
+}
+
+
+void MainWindow::on_back_btn_clicked()
+{
+    ui->stackedWidget->setCurrentIndex(0);
+}
+
+
+void MainWindow::on_stackedWidget_currentChanged(int arg1)
+{
+    /*
+    0: main
+    1: f scan
+    2: m scan
+    3: schedule
+    4: config
+
+    */
+
+    ui->back_btn->setVisible(true);
+
+    switch (arg1) {
+    case 0:
+        ui->title_label->setText(tr("Clamqt"));
+        ui->back_btn->setVisible(false);
+        break;
+    case 1:
+        ui->title_label->setText(tr("Clamqt: File Scan"));
+        break;
+    case 2:
+        ui->title_label->setText(tr("Clamqt: Memory Scan"));
+        break;
+    case 3:
+        ui->title_label->setText(tr("Clamqt: Schedule"));
+        break;
+    case 4:
+        ui->title_label->setText(tr("Clamqt: Settings"));
+        break;
+    default:
+        break;
+    }
 }
 

@@ -22,10 +22,16 @@ int main(int argc, char *argv[])
 
 
 
-    QFile qss("Aqua.qss");
-    qss.open(QFile::ReadOnly);
-    a.setStyleSheet(qss.readAll());
-    qss.close();
+    QDir dir("."); // 使用当前目录
+    QStringList filters;
+    filters << "*.qss"; // 设置过滤器以匹配.qss文件
+    QStringList files = dir.entryList(filters);
+    if (!files.isEmpty()) {
+        QFile qss(files.first());
+        qss.open(QFile::ReadOnly);
+        a.setStyleSheet(qss.readAll());
+        qss.close();
+    }
 
 
 

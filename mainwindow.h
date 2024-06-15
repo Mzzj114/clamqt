@@ -29,6 +29,8 @@ public:
     bool isServiceExists(const QString& serviceName);
     bool isServiceRunning(const QString &serviceName);
 
+
+    //会调用clamav的情况，用于决定读取的信息是什么
     enum states{
         ScaningFile,
         ScaningMemory,
@@ -43,7 +45,7 @@ public:
 
 
     void showPic(QString picture);
-    void playSound(QString sound);
+    //void playSound(QString sound);
 
     //slot when readyread
     void readLine(QString str);
@@ -75,6 +77,8 @@ private slots:
     //void on_stop_button_clicked();
     void on_bowse_d_targ_clicked();
     void on_close_btn_clicked();
+    void on_back_btn_clicked();
+    void on_stackedWidget_currentChanged(int arg1);
 
 private:
     Ui::MainWindow *ui;
